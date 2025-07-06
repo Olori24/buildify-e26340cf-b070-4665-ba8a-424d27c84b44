@@ -20,11 +20,6 @@ const AppNavbar = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
-  // Don't show navbar on tracking page
-  if (location.pathname.startsWith('/track/')) {
-    return null;
-  }
-
   useEffect(() => {
     const checkUser = async () => {
       const { data } = await supabase.auth.getSession();
@@ -50,6 +45,11 @@ const AppNavbar = () => {
     await supabase.auth.signOut();
     navigate('/');
   };
+  
+  // Don't show navbar on tracking page
+  if (location.pathname.startsWith('/track/')) {
+    return null;
+  }
 
   return (
     <header className="border-b bg-background">

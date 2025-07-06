@@ -109,7 +109,7 @@ const CreateLabelPage: React.FC = () => {
     };
     
     checkUser();
-  }, []);
+  }, [navigate, form]);
 
   const form = useForm<ShippingLabelFormValues>({
     resolver: zodResolver(shippingLabelSchema),
