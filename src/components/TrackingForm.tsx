@@ -81,5 +81,3 @@ const TrackingForm: React.FC = () => {
 };
 
 export default TrackingForm;
-
-export default TrackingForm;
