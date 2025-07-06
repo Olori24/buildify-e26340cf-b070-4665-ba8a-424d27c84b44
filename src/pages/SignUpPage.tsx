@@ -43,13 +43,22 @@ const personalAccountSchema = z.object({
 });
 
 // Business account form schema
-const businessAccountSchema = personalAccountSchema.extend({
+const businessAccountSchema = z.object({
+  fullName: z.string().min(2, { message: 'Full name must be at least 2 characters' }),
+  email: z.string().email({ message: 'Please enter a valid email address' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
+  confirmPassword: z.string(),
+  phoneNumber: z.string().optional(),
+  address: z.string().optional(),
   businessName: z.string().min(2, { message: 'Business name must be at least 2 characters' }),
   businessAddress: z.string().min(5, { message: 'Please enter a valid business address' }),
   businessPhone: z.string().optional(),
   taxId: z.string().optional(),
   industry: z.string().optional(),
   website: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.literal('')),
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword'],
 });
 
 type PersonalAccountFormValues = z.infer<typeof personalAccountSchema>;
