@@ -1,278 +1,265 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getAllPackages, updatePackageStatus } from '@/lib/mock-data';
-import { Package } from '@/types';
-import PackageStatusBadge from '@/components/PackageStatusBadge';
-import { format } from 'date-fns';
-import { ArrowLeft, Search, RefreshCw } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from '@/components/ui/dialog';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/use-toast';
+import { PackageStatusBadge } from '@/components/PackageStatusBadge';
+import { getAllPackages, updatePackageStatus } from '@/lib/supabase';
+import { PackageRow } from '@/types';
 
-const AdminDashboard = () => {
-  const [packages, setPackages] = useState<Package[]>([]);
-  const [filteredPackages, setFilteredPackages] = useState<Package[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+const AdminDashboard: React.FC = () => {
+  const [packages, setPackages] = useState<PackageRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedPackage, setSelectedPackage] = useState<PackageRow | null>(null);
+  const [newStatus, setNewStatus] = useState('');
+  const [location, setLocation] = useState('');
+  const [description, setDescription] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      const data = getAllPackages();
-      setPackages(data);
-      setFilteredPackages(data);
-      setLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
+    fetchPackages();
   }, []);
 
-  useEffect(() => {
-    let result = packages;
-    
-    // Apply status filter
-    if (statusFilter !== 'all') {
-      result = result.filter(pkg => pkg.status === statusFilter);
-    }
-    
-    // Apply search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(pkg => 
-        pkg.trackingNumber.toLowerCase().includes(query) ||
-        pkg.recipient.name.toLowerCase().includes(query) ||
-        pkg.recipient.city.toLowerCase().includes(query) ||
-        pkg.sender.name.toLowerCase().includes(query)
-      );
-    }
-    
-    setFilteredPackages(result);
-  }, [packages, searchQuery, statusFilter]);
-
-  const handleUpdateStatus = (trackingNumber: string, newStatus: Package['status']) => {
-    // Get the package
-    const pkg = packages.find(p => p.trackingNumber === trackingNumber);
-    if (!pkg) return;
-    
-    // Get the current location from the most recent event
-    const sortedEvents = [...pkg.trackingHistory].sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
-    const currentLocation = sortedEvents[0].location;
-    
-    // Generate appropriate description based on status
-    let description = '';
-    switch (newStatus) {
-      case 'in-transit':
-        description = 'Package is in transit to the next facility';
-        break;
-      case 'out-for-delivery':
-        description = 'Package is out for delivery';
-        break;
-      case 'delivered':
-        description = 'Package has been delivered';
-        break;
-      case 'exception':
-        description = 'There is an issue with the delivery';
-        break;
-      default:
-        description = 'Package status has been updated';
-    }
-    
-    // Update the package status
-    const updatedPackage = updatePackageStatus(trackingNumber, newStatus, currentLocation, description);
-    
-    if (updatedPackage) {
-      // Update the packages state
-      setPackages(prevPackages => 
-        prevPackages.map(p => p.trackingNumber === trackingNumber ? updatedPackage : p)
-      );
-      
-      toast({
-        title: "Status Updated",
-        description: `Package ${trackingNumber} status updated to ${newStatus}`,
-      });
-    }
-  };
-
-  const refreshData = () => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      const data = getAllPackages();
+  const fetchPackages = async () => {
+    try {
+      const data = await getAllPackages();
       setPackages(data);
-      setFilteredPackages(data);
-      setLoading(false);
-      
+    } catch (error) {
+      console.error('Error fetching packages:', error);
       toast({
-        title: "Data Refreshed",
-        description: "Package data has been refreshed",
+        title: 'Error',
+        description: 'Failed to fetch packages',
+        variant: 'destructive',
       });
-    }, 1000);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleUpdateStatus = async () => {
+    if (!selectedPackage || !newStatus || !location) {
+      toast({
+        title: 'Missing information',
+        description: 'Please fill in all required fields',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsUpdating(true);
+
+    try {
+      await updatePackageStatus(
+        selectedPackage.tracking_number,
+        newStatus,
+        location,
+        description
+      );
+
+      toast({
+        title: 'Status updated',
+        description: `Package ${selectedPackage.tracking_number} status updated to ${newStatus}`,
+      });
+
+      // Refresh the packages list
+      fetchPackages();
+      setIsDialogOpen(false);
+      resetForm();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update package status',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const resetForm = () => {
+    setSelectedPackage(null);
+    setNewStatus('');
+    setLocation('');
+    setDescription('');
+  };
+
+  const handleOpenDialog = (pkg: PackageRow) => {
+    setSelectedPackage(pkg);
+    setLocation(pkg.recipient_address.split(',').pop()?.trim() || '');
+    setIsDialogOpen(true);
+  };
+
+  const filteredPackages = packages.filter(pkg => 
+    pkg.tracking_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    pkg.recipient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    pkg.sender_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    pkg.status.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" asChild>
-              <Link to="/">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button>
-            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+      <Card>
+        <CardHeader>
+          <CardTitle>Admin Dashboard</CardTitle>
+          <CardDescription>Manage and update package deliveries</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-6">
+            <Input
+              placeholder="Search packages..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-md"
+            />
           </div>
-          <Button onClick={refreshData} disabled={loading}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>Total Packages</CardTitle>
-              <CardDescription>All packages in the system</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{packages.length}</p>
-            </CardContent>
-          </Card>
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>In Transit</CardTitle>
-              <CardDescription>Packages currently in transit</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">
-                {packages.filter(pkg => pkg.status === 'in-transit').length}
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>Delivered Today</CardTitle>
-              <CardDescription>Packages delivered today</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">
-                {packages.filter(pkg => 
-                  pkg.status === 'delivered' && 
-                  pkg.trackingHistory.some(event => 
-                    event.status === 'Delivered' && 
-                    new Date(event.timestamp).toDateString() === new Date().toDateString()
-                  )
-                ).length}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="bg-card border rounded-lg overflow-hidden">
-          <div className="p-4 border-b">
-            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-              <h2 className="text-xl font-semibold">Package Management</h2>
-              <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                <div className="relative w-full sm:w-64">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search packages..."
-                    className="pl-8"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full sm:w-40">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="in-transit">In Transit</SelectItem>
-                    <SelectItem value="out-for-delivery">Out for Delivery</SelectItem>
-                    <SelectItem value="delivered">Delivered</SelectItem>
-                    <SelectItem value="exception">Exception</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tracking #</TableHead>
-                  <TableHead>Recipient</TableHead>
-                  <TableHead>Origin</TableHead>
-                  <TableHead>Destination</TableHead>
-                  <TableHead>Est. Delivery</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
+          {loading ? (
+            <div className="text-center py-8">Loading packages...</div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
-                      Loading packages...
-                    </TableCell>
+                    <TableHead>Tracking Number</TableHead>
+                    <TableHead>Sender</TableHead>
+                    <TableHead>Recipient</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Last Updated</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ) : filteredPackages.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
-                      No packages found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredPackages.map((pkg) => (
-                    <TableRow key={pkg.id}>
-                      <TableCell className="font-medium">
-                        <Link to={`/track/${pkg.trackingNumber}`} className="text-primary hover:underline">
-                          {pkg.trackingNumber}
-                        </Link>
-                      </TableCell>
-                      <TableCell>{pkg.recipient.name}</TableCell>
-                      <TableCell>{pkg.origin}</TableCell>
-                      <TableCell>{pkg.destination}</TableCell>
-                      <TableCell>{format(new Date(pkg.estimatedDelivery), 'MMM d, yyyy')}</TableCell>
-                      <TableCell>
-                        <PackageStatusBadge status={pkg.status} />
-                      </TableCell>
-                      <TableCell>
-                        <Select 
-                          defaultValue={pkg.status}
-                          onValueChange={(value) => handleUpdateStatus(pkg.trackingNumber, value as Package['status'])}
-                        >
-                          <SelectTrigger className="w-36">
-                            <SelectValue placeholder="Update Status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="in-transit">In Transit</SelectItem>
-                            <SelectItem value="out-for-delivery">Out for Delivery</SelectItem>
-                            <SelectItem value="delivered">Delivered</SelectItem>
-                            <SelectItem value="exception">Exception</SelectItem>
-                          </SelectContent>
-                        </Select>
+                </TableHeader>
+                <TableBody>
+                  {filteredPackages.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-4">
+                        No packages found
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    filteredPackages.map((pkg) => (
+                      <TableRow key={pkg.id}>
+                        <TableCell className="font-medium">{pkg.tracking_number}</TableCell>
+                        <TableCell>{pkg.sender_name}</TableCell>
+                        <TableCell>{pkg.recipient_name}</TableCell>
+                        <TableCell>
+                          <PackageStatusBadge status={pkg.status} />
+                        </TableCell>
+                        <TableCell>
+                          {new Date(pkg.updated_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleOpenDialog(pkg)}
+                          >
+                            Update Status
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Package Status</DialogTitle>
+            <DialogDescription>
+              Update the status for tracking number {selectedPackage?.tracking_number}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="status">New Status</Label>
+              <Select value={newStatus} onValueChange={setNewStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a new status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Processing">Processing</SelectItem>
+                  <SelectItem value="In Transit">In Transit</SelectItem>
+                  <SelectItem value="Out for Delivery">Out for Delivery</SelectItem>
+                  <SelectItem value="Delivered">Delivered</SelectItem>
+                  <SelectItem value="Exception">Exception</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="location">Current Location</Label>
+              <Input 
+                id="location" 
+                value={location} 
+                onChange={(e) => setLocation(e.target.value)} 
+                placeholder="e.g., Lagos Sorting Facility"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="description">Description (Optional)</Label>
+              <Textarea 
+                id="description" 
+                value={description} 
+                onChange={(e) => setDescription(e.target.value)} 
+                placeholder="Additional details about this status update"
+              />
+            </div>
           </div>
-        </div>
-      </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateStatus} disabled={isUpdating}>
+              {isUpdating ? 'Updating...' : 'Update Status'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

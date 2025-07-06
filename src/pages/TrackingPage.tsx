@@ -2,68 +2,74 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { getPackageByTracking } from '@/lib/mock-data';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Package } from '@/types';
 import PackageDetails from '@/components/PackageDetails';
 import TrackingTimeline from '@/components/TrackingTimeline';
 import DeliveryMap from '@/components/DeliveryMap';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft } from 'lucide-react';
+import PackageStatusBadge from '@/components/PackageStatusBadge';
+import { getPackageByTrackingNumber } from '@/lib/supabase';
+import Logo from '@/components/Logo';
 
-const TrackingPage = () => {
+const TrackingPage: React.FC = () => {
   const { trackingNumber } = useParams<{ trackingNumber: string }>();
   const [packageData, setPackageData] = useState<Package | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!trackingNumber) {
-      setError('No tracking number provided');
-      setLoading(false);
-      return;
-    }
-
-    // Simulate API call
-    const timer = setTimeout(() => {
-      const data = getPackageByTracking(trackingNumber);
-      if (data) {
-        setPackageData(data);
-      } else {
-        setError('Package not found');
+    const fetchPackage = async () => {
+      if (!trackingNumber) {
+        setError('No tracking number provided');
+        setLoading(false);
+        return;
       }
-      setLoading(false);
-    }, 1000);
 
-    return () => clearTimeout(timer);
+      try {
+        const data = await getPackageByTrackingNumber(trackingNumber);
+        
+        if (!data) {
+          setError('Package not found');
+        } else {
+          setPackageData(data);
+        }
+      } catch (err) {
+        console.error('Error fetching package:', err);
+        setError('Failed to fetch package information');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPackage();
   }, [trackingNumber]);
-
-  // Get the current location from the most recent tracking event
-  const getCurrentLocation = () => {
-    if (!packageData || packageData.trackingHistory.length === 0) return null;
-    
-    const sortedEvents = [...packageData.trackingHistory].sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
-    
-    return sortedEvents[0].location;
-  };
 
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-5xl mx-auto space-y-8">
-          <div className="flex items-center gap-2 mb-6">
-            <Button variant="ghost" size="icon" asChild>
-              <Link to="/">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Skeleton className="h-8 w-64" />
-          </div>
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-96 w-full" />
-          <Skeleton className="h-64 w-full" />
+        <div className="flex justify-center mb-8">
+          <Link to="/">
+            <Logo size="lg" variant="full" />
+          </Link>
         </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-1/3" />
+                <Skeleton className="h-6 w-1/2" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <Skeleton className="h-40 w-full" />
+                  <Skeleton className="h-60 w-full" />
+                </div>
+                <Skeleton className="h-[400px] w-full" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -71,51 +77,67 @@ const TrackingPage = () => {
   if (error || !packageData) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center gap-2 mb-6">
-            <Button variant="ghost" size="icon" asChild>
-              <Link to="/">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button>
-            <h1 className="text-2xl font-bold">Package Tracking</h1>
-          </div>
-          <div className="bg-destructive/10 text-destructive p-6 rounded-lg">
-            <h2 className="text-xl font-semibold mb-2">Error</h2>
-            <p>{error || 'An unknown error occurred'}</p>
-            <Button asChild className="mt-4">
-              <Link to="/">Return to Home</Link>
-            </Button>
-          </div>
+        <div className="flex justify-center mb-8">
+          <Link to="/">
+            <Logo size="lg" variant="full" />
+          </Link>
         </div>
+        <Card>
+          <CardContent className="p-6 text-center">
+            <div className="py-12 space-y-4">
+              <h2 className="text-2xl font-bold text-destructive">Package Not Found</h2>
+              <p className="text-muted-foreground">
+                {error || 'We couldn\'t find a package with the provided tracking number.'}
+              </p>
+              <Button asChild className="mt-4">
+                <Link to="/">Track Another Package</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
+  const currentLocation = packageData.trackingHistory[0]?.location || '';
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex items-center gap-2 mb-6">
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <h1 className="text-2xl font-bold">Package Tracking</h1>
-        </div>
-
-        <div className="grid grid-cols-1 gap-8">
-          <PackageDetails packageData={packageData} />
-          
-          <DeliveryMap 
-            origin={packageData.origin} 
-            destination={packageData.destination} 
-            currentLocation={getCurrentLocation() || undefined}
-          />
-          
-          <TrackingTimeline events={packageData.trackingHistory} />
-        </div>
+      <div className="flex justify-center mb-8">
+        <Link to="/">
+          <Logo size="lg" variant="full" />
+        </Link>
       </div>
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h1 className="text-2xl font-bold">Tracking Details</h1>
+                <p className="text-muted-foreground">Tracking Number: {packageData.trackingNumber}</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <PackageStatusBadge status={packageData.status} />
+                <Button asChild variant="outline">
+                  <Link to="/">Track Another Package</Link>
+                </Button>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-6">
+                <PackageDetails packageData={packageData} />
+                <DeliveryMap 
+                  origin={packageData.origin} 
+                  destination={packageData.destination}
+                  currentLocation={currentLocation}
+                />
+              </div>
+              <TrackingTimeline events={packageData.trackingHistory} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

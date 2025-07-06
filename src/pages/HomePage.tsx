@@ -1,72 +1,86 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import TrackingForm from '@/components/TrackingForm';
-import { Link } from 'react-router-dom';
+import Logo from '@/components/Logo';
 
-const HomePage = () => {
+const HomePage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-12">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold tracking-tight mb-4">Track Your Deliveries in Real-Time</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Get instant updates on your package location, estimated delivery time, and more with our advanced tracking system.
-          </p>
-        </div>
-
-        <div className="mb-16">
-          <TrackingForm />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card">
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+      <div className="flex flex-col items-center justify-center text-center mb-12">
+        <Logo size="lg" variant="full" className="mb-6" />
+        <h1 className="text-4xl font-bold tracking-tight mb-4">Track Your Package</h1>
+        <p className="text-xl text-muted-foreground max-w-2xl">
+          Enter your tracking number to get real-time updates on your delivery status.
+        </p>
+      </div>
+      
+      <div className="max-w-md mx-auto mb-16">
+        <TrackingForm />
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        <Card>
+          <CardHeader className="text-center">
+            <div className="mx-auto bg-primary/10 w-12 h-12 flex items-center justify-center rounded-full mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium mb-2">Secure Tracking</h3>
-            <p className="text-muted-foreground">Track your packages securely with our advanced tracking system.</p>
-          </div>
-
-          <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card">
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+            <CardTitle>Secure Delivery</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-muted-foreground">
+              Your packages are handled with care and delivered securely to their destination.
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="text-center">
+            <div className="mx-auto bg-primary/10 w-12 h-12 flex items-center justify-center rounded-full mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium mb-2">Real-Time Updates</h3>
-            <p className="text-muted-foreground">Get instant notifications about your package's location and status.</p>
-          </div>
-
-          <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card">
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+            <CardTitle>Real-Time Tracking</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-muted-foreground">
+              Track your packages in real-time with detailed updates at every step of the delivery process.
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="text-center">
+            <div className="mx-auto bg-primary/10 w-12 h-12 flex items-center justify-center rounded-full mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium mb-2">Delivery Management</h3>
-            <p className="text-muted-foreground">Manage all your deliveries in one place with our easy-to-use dashboard.</p>
-          </div>
-        </div>
-
-        <div className="bg-muted p-8 rounded-lg text-center">
-          <h2 className="text-2xl font-bold mb-4">Are you a business looking for delivery solutions?</h2>
-          <p className="text-lg mb-6 max-w-2xl mx-auto">
-            We offer comprehensive delivery management solutions for businesses of all sizes.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg">
-              <Link to="/admin">Admin Dashboard</Link>
-            </Button>
-            <Button variant="outline" size="lg">
-              <Link to="/contact">Contact Sales</Link>
-            </Button>
-          </div>
-        </div>
+            <CardTitle>Dedicated Support</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-muted-foreground">
+              Our customer support team is available 24/7 to assist you with any delivery concerns.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <div className="bg-primary/5 rounded-lg p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4">Business Solutions</h2>
+        <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
+          OLORI24 offers comprehensive logistics solutions for businesses of all sizes. From e-commerce fulfillment to corporate deliveries, we've got you covered.
+        </p>
+        <button className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md">
+          Learn More
+        </button>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Logo from './Logo';
 
 const AppFooter = () => {
   return (
@@ -9,15 +10,10 @@ const AppFooter = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2v20M2 12h20" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold">TrackIt</span>
+              <Logo size="sm" variant="full" />
             </Link>
             <p className="text-sm text-muted-foreground">
-              Reliable package tracking and delivery management solutions for businesses and individuals.
+              Reliable package tracking and delivery management solutions for businesses and individuals across Nigeria.
             </p>
           </div>
           
@@ -97,7 +93,7 @@ const AppFooter = () => {
         
         <div className="border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} TrackIt. All rights reserved.
+            © {new Date().getFullYear()} OLORI24. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <a href="#" className="text-muted-foreground hover:text-primary">
@@ -134,5 +130,7 @@ const AppFooter = () => {
     </footer>
   );
 };
+
+export default AppFooter;
 
 export default AppFooter;

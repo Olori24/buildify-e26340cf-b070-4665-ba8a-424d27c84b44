@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import Logo from './Logo';
 
 const AppNavbar = () => {
   const location = useLocation();
@@ -17,12 +18,7 @@ const AppNavbar = () => {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2v20M2 12h20" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold">TrackIt</span>
+              <Logo size="md" variant="full" />
             </Link>
             <nav className="hidden md:flex gap-6">
               <Link to="/" className="text-sm font-medium transition-colors hover:text-primary">
@@ -52,5 +48,7 @@ const AppNavbar = () => {
     </header>
   );
 };
+
+export default AppNavbar;
 
 export default AppNavbar;

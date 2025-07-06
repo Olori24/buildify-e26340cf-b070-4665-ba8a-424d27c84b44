@@ -1,26 +1,27 @@
 
+import type { Database } from './database';
+
+export type Tables = Database['public']['Tables'];
+export type PackageRow = Tables['packages']['Row'];
+export type TrackingEventRow = Tables['tracking_events']['Row'];
+export type UserRow = Tables['users']['Row'];
+
 export interface Package {
   id: string;
   trackingNumber: string;
-  status: 'pending' | 'in-transit' | 'out-for-delivery' | 'delivered' | 'exception';
+  status: 'Processing' | 'In Transit' | 'Out for Delivery' | 'Delivered' | 'Exception';
   estimatedDelivery: string;
   origin: string;
   destination: string;
   weight: string;
-  service: string;
+  dimensions?: string;
   recipient: {
     name: string;
     address: string;
-    city: string;
-    state: string;
-    zip: string;
   };
   sender: {
     name: string;
     address: string;
-    city: string;
-    state: string;
-    zip: string;
   };
   trackingHistory: TrackingEvent[];
 }
@@ -36,6 +37,8 @@ export interface TrackingEvent {
 export interface User {
   id: string;
   email: string;
-  name: string;
+  fullName: string;
   role: 'admin' | 'driver' | 'customer';
+  phoneNumber?: string;
+  address?: string;
 }

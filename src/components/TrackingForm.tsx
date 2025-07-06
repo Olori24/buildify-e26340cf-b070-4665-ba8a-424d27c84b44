@@ -3,22 +3,23 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getPackageByTracking } from '@/lib/mock-data';
-import { toast } from '@/components/ui/use-toast';
+import { Card, CardContent } from '@/components/ui/card';
+import { useToast } from '@/components/ui/use-toast';
+import { getPackageByTrackingNumber } from '@/lib/supabase';
 
-const TrackingForm = () => {
+const TrackingForm: React.FC = () => {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!trackingNumber.trim()) {
       toast({
-        title: "Error",
-        description: "Please enter a tracking number",
+        title: "Tracking number required",
+        description: "Please enter a valid tracking number",
         variant: "destructive",
       });
       return;
@@ -26,50 +27,59 @@ const TrackingForm = () => {
     
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      const packageData = getPackageByTracking(trackingNumber);
+    try {
+      // Check if the package exists
+      const packageData = await getPackageByTrackingNumber(trackingNumber);
       
-      if (packageData) {
-        navigate(`/track/${trackingNumber}`);
-      } else {
+      if (!packageData) {
         toast({
-          title: "Package Not Found",
-          description: "We couldn't find a package with that tracking number. Please check and try again.",
+          title: "Package not found",
+          description: "No package found with the provided tracking number",
           variant: "destructive",
         });
+        setIsLoading(false);
+        return;
       }
       
+      // Navigate to the tracking page
+      navigate(`/track/${trackingNumber}`);
+    } catch (error) {
+      console.error('Error tracking package:', error);
+      toast({
+        title: "Error",
+        description: "Failed to track package. Please try again.",
+        variant: "destructive",
+      });
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
     <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>Track Your Package</CardTitle>
-        <CardDescription>Enter your tracking number to get real-time updates</CardDescription>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex flex-col space-y-2">
+          <div className="space-y-2">
             <Input
-              placeholder="Enter tracking number (e.g., PKG12345678)"
+              type="text"
+              placeholder="Enter tracking number (e.g., OLR24-1001)"
               value={trackingNumber}
               onChange={(e) => setTrackingNumber(e.target.value)}
               className="w-full"
             />
-            <p className="text-xs text-muted-foreground">
-              For demo, try: PKG12345678, PKG87654321, or PKG24681357
-            </p>
           </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Searching..." : "Track Package"}
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={isLoading}
+          >
+            {isLoading ? 'Tracking...' : 'Track Package'}
           </Button>
         </form>
       </CardContent>
     </Card>
   );
 };
+
+export default TrackingForm;
 
 export default TrackingForm;
