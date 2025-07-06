@@ -3,6 +3,9 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import TrackingForm from '@/components/TrackingForm';
 import Logo from '@/components/Logo';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { Package, Truck, Users, BarChart3 } from 'lucide-react';
 
 const HomePage: React.FC = () => {
   return (
@@ -19,56 +22,72 @@ const HomePage: React.FC = () => {
         <TrackingForm />
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
         <Card>
           <CardHeader className="text-center">
             <div className="mx-auto bg-primary/10 w-12 h-12 flex items-center justify-center rounded-full mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-              </svg>
+              <Package className="h-6 w-6 text-primary" />
             </div>
-            <CardTitle>Secure Delivery</CardTitle>
+            <CardTitle>Create Shipping Labels</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
-            <p className="text-muted-foreground">
-              Your packages are handled with care and delivered securely to their destination.
+            <p className="text-muted-foreground mb-4">
+              Create shipping labels quickly and easily with our user-friendly interface.
             </p>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/create-label">Create Label</Link>
+            </Button>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="text-center">
             <div className="mx-auto bg-primary/10 w-12 h-12 flex items-center justify-center rounded-full mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
+              <Truck className="h-6 w-6 text-primary" />
             </div>
             <CardTitle>Real-Time Tracking</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               Track your packages in real-time with detailed updates at every step of the delivery process.
             </p>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/#tracking">Track Package</Link>
+            </Button>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="text-center">
             <div className="mx-auto bg-primary/10 w-12 h-12 flex items-center justify-center rounded-full mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
+              <Users className="h-6 w-6 text-primary" />
             </div>
-            <CardTitle>Dedicated Support</CardTitle>
+            <CardTitle>Personal & Business</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
-            <p className="text-muted-foreground">
-              Our customer support team is available 24/7 to assist you with any delivery concerns.
+            <p className="text-muted-foreground mb-4">
+              Create an account for personal use or set up a business account for your company's shipping needs.
             </p>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/signup">Sign Up</Link>
+            </Button>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="text-center">
+            <div className="mx-auto bg-primary/10 w-12 h-12 flex items-center justify-center rounded-full mb-4">
+              <BarChart3 className="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle>Shipment Dashboard</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-muted-foreground mb-4">
+              Manage all your shipments in one place with our comprehensive dashboard.
+            </p>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/dashboard">Dashboard</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -78,9 +97,9 @@ const HomePage: React.FC = () => {
         <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
           OLORI24 offers comprehensive logistics solutions for businesses of all sizes. From e-commerce fulfillment to corporate deliveries, we've got you covered.
         </p>
-        <button className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md">
-          Learn More
-        </button>
+        <Button asChild>
+          <Link to="/signup?type=business">Create Business Account</Link>
+        </Button>
       </div>
     </div>
   );

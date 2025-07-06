@@ -11,6 +11,10 @@ import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import AppNavbar from "./components/AppNavbar";
 import AppFooter from "./components/AppFooter";
+import SignUpPage from "./pages/SignUpPage";
+import LoginPage from "./pages/LoginPage";
+import CreateLabelPage from "./pages/CreateLabelPage";
+import DashboardPage from "./pages/DashboardPage";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +31,10 @@ const App = () => (
               <Route path="/" element={<HomePage />} />
               <Route path="/track/:trackingNumber" element={<TrackingPage />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/signup" element={<SignUpPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/create-label" element={<CreateLabelPage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
